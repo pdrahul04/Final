@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { setCurrentView } from '../../store/slices/uiSlice';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../hooks/redux';
 import { 
   Home, 
   Kanban, 
@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import type { ViewType } from '../../types';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,18 +17,18 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
-  const dispatch = useAppDispatch();
-  const { currentView } = useAppSelector(state => state.ui);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { currentProject } = useAppSelector(state => state.projects);
 
-  const handleViewChange = (view: ViewType) => {
-    dispatch(setCurrentView(view));
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   // Navigation items based on project type
   const getNavigationItems = () => {
     const baseItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: Home, view: 'dashboard' as ViewType}
+      { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' }
     ];
 
     if (!currentProject) {
@@ -37,14 +36,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     }
 
     const projectItems = [
-      { id: 'board', label: 'Board', icon: Kanban, view: 'board' as ViewType}
+      { id: 'board', label: 'Board', icon: Kanban, path: '/board' }
     ];
 
     // Add scrum-specific items
     if (currentProject.type === 'scrum') {
       projectItems.push(
-        { id: 'backlog', label: 'Backlog', icon: List, view: 'backlog' as ViewType },
-        { id: 'sprints', label: 'Sprints', icon: Zap, view: 'sprints' as ViewType }
+        { id: 'backlog', label: 'Backlog', icon: List, path: '/backlog' },
+        { id: 'sprints', label: 'Sprints', icon: Zap, path: '/sprints' }
       );
     }
 
@@ -74,13 +73,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       <nav className="sidebar-nav">
         {navigationItems.map(item => {
           const Icon = item.icon;
-          const isActive = currentView === item.view;
+          const isActive = location.pathname === item.path;
 
           return (
             <button
               key={item.id}
               className={`nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => handleViewChange(item.view)}
+              onClick={() => handleNavigation(item.path)}
               title={!isOpen ? item.label : undefined}
             >
               <Icon size={20} />
@@ -92,7 +91,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
       {isOpen && (
         <div className="sidebar-footer">
-          <button className="nav-item">
+          <button 
+            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+            onClick={() => handleNavigation('/settings')}
+          >
             <Settings size={20} />
             <span>Settings</span>
           </button>

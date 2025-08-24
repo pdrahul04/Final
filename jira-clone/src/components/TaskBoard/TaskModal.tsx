@@ -11,15 +11,11 @@ interface TaskModalProps {
   defaultStatus?: TaskStatus;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({
-  task,
-  isOpen,
-  onClose,
-  defaultStatus,
-}) => {
+const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultStatus }) => {
   const dispatch = useAppDispatch();
-  const { currentProject } = useAppSelector((state) => state.projects);
-
+  const { currentProject } = useAppSelector(state => state.projects);
+  const { sprints } = useAppSelector(state => state.sprints);
+  
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
@@ -34,6 +30,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     assignee: "",
   });
 
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,15 +42,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
         description: task.description,
         priority: task.priority,
         status: task.status,
-        assignee: task.assignee || "",
+        assignee: task.assignee || ''
       });
     } else {
       setFormData({
-        title: "",
-        description: "",
+        title: '',
+        description: '',
         priority: 'medium',
-        status: "todo",
-        assignee: "",
+        status: 'todo',
+        assignee: ''
       });
     }
     setErrors({});
@@ -64,9 +61,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = "Task title is required";
+      newErrors.title = 'Task title is required';
     } else if (formData.title.trim().length < 3) {
-      newErrors.title = "Task title must be at least 3 characters";
+      newErrors.title = 'Task title must be at least 3 characters';
     }
 
     setErrors(newErrors);
@@ -76,7 +73,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!validateForm() || !currentProject) {
       return;
     }
@@ -86,54 +83,57 @@ const TaskModal: React.FC<TaskModalProps> = ({
     try {
       if (task) {
         // Update existing task
-        dispatch(
-          updateTask({
-            id: task.id,
-            updates: {
-              title: formData.title.trim(),
-              description: formData.description.trim(),
-              priority: formData.priority,
-              status: formData.status,
-              assignee: formData.assignee.trim() || undefined,
-            },
-          })
-        );
-      } else {
-        // Create new task
-        dispatch(
-          createTask({
+        dispatch(updateTask({
+          id: task.id,
+          updates: {
             title: formData.title.trim(),
             description: formData.description.trim(),
             priority: formData.priority,
-            projectId: currentProject.id,
-            assignee: formData.assignee.trim() || undefined,
-          })
-        );
+            status: formData.status,
+            assignee: formData.assignee.trim() || undefined
+          }
+        }));
+      } else {
+        // Create new task - for Scrum projects, assign to active sprint
+        let sprintId: string | undefined = undefined;
+        
+        if (currentProject.type === 'scrum') {
+          const activeSprint = sprints.find(sprint => 
+            sprint.projectId === currentProject.id && sprint.status === 'active'
+          );
+          sprintId = activeSprint?.id;
+        }
+        
+        dispatch(createTask({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          priority: formData.priority,
+          projectId: currentProject.id,
+          sprintId: sprintId,
+          assignee: formData.assignee.trim() || undefined
+        }));
       }
-
+      
       onClose();
     } catch (error) {
-      console.error("Failed to save task:", error);
+      console.error('Failed to save task:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Handle input changes
-  const handleInputChange = (
-    field: string,
-    value: string | TaskPriority | TaskStatus
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
+  const handleInputChange = (field: string, value: string | TaskPriority | TaskStatus) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
   // Priority options
-  const priorityOptions = [
+   const priorityOptions = [
     { value: "low", label: "Low", color: "#28a745" },
     { value: "medium", label: "Medium", color: "#ffc107" },
     { value: "high", label: "High", color: "#fd7e14" },
@@ -146,14 +146,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
     { value: "in_review", label: "In Review" },
     { value: "done", label: "Done" },
   ];
-
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{task ? "Edit Task" : "Create New Task"}</h2>
+          <h2>{task ? 'Edit Task' : 'Create New Task'}</h2>
           <button className="modal-close" onClick={onClose}>
             <X size={20} />
           </button>
@@ -168,15 +167,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
             <input
               id="taskTitle"
               type="text"
-              className={`form-input ${errors.title ? "error" : ""}`}
+              className={`form-input ${errors.title ? 'error' : ''}`}
               value={formData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="Enter task title"
               disabled={isSubmitting}
             />
-            {errors.title && (
-              <span className="error-message">{errors.title}</span>
-            )}
+            {errors.title && <span className="error-message">{errors.title}</span>}
           </div>
 
           {/* Task Description */}
@@ -188,7 +185,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               id="taskDescription"
               className="form-textarea"
               value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Describe the task (optional)"
               rows={4}
               disabled={isSubmitting}
@@ -206,12 +203,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 id="taskPriority"
                 className="form-select"
                 value={formData.priority}
-                onChange={(e) =>
-                  handleInputChange("priority", e.target.value as TaskPriority)
-                }
+                onChange={(e) => handleInputChange('priority', e.target.value as TaskPriority)}
                 disabled={isSubmitting}
               >
-                {priorityOptions.map((option) => (
+                {priorityOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -228,12 +223,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 id="taskStatus"
                 className="form-select"
                 value={formData.status}
-                onChange={(e) =>
-                  handleInputChange("status", e.target.value as TaskStatus)
-                }
+                onChange={(e) => handleInputChange('status', e.target.value as TaskStatus)}
                 disabled={isSubmitting}
               >
-                {statusOptions.map((option) => (
+                {statusOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -253,7 +246,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               type="text"
               className="form-input"
               value={formData.assignee}
-              onChange={(e) => handleInputChange("assignee", e.target.value)}
+              onChange={(e) => handleInputChange('assignee', e.target.value)}
               placeholder="Enter assignee name (optional)"
               disabled={isSubmitting}
             />
@@ -275,11 +268,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               disabled={isSubmitting}
             >
               <Save size={16} />
-              {isSubmitting
-                ? "Saving..."
-                : task
-                ? "Update Task"
-                : "Create Task"}
+              {isSubmitting ? 'Saving...' : (task ? 'Update Task' : 'Create Task')}
             </button>
           </div>
         </form>

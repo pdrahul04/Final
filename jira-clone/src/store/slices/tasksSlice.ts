@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { saveTasks, getTasks, generateId, getCurrentTimestamp } from '../../utils/localStorage';
 import type { Task, TaskPriority, TaskStatus } from '../../types';
+import { saveTasks, getTasks, generateId, getCurrentTimestamp } from '../../utils/localStorage';
 
 interface TasksState {
   tasks: Task[];
@@ -75,10 +75,10 @@ const tasksSlice = createSlice({
     },
 
     // Move task to sprint (for scrum projects)
-    moveTaskToSprint: (state, action: PayloadAction<{ taskId: string; sprintId: string }>) => {
+    moveTaskToSprint: (state, action: PayloadAction<{ taskId: string; sprintId: string | null | '' }>) => {
       const taskIndex = state.tasks.findIndex(t => t.id === action.payload.taskId);
       if (taskIndex !== -1) {
-        state.tasks[taskIndex].sprintId = action.payload.sprintId;
+        state.tasks[taskIndex].sprintId = action.payload.sprintId || undefined;
         state.tasks[taskIndex].updatedAt = getCurrentTimestamp();
         saveTasks(state.tasks);
       }

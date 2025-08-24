@@ -4,9 +4,12 @@ import type { Task, TaskPriority, TaskStatus } from '../../types';
 import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { Plus, User } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { deleteTask, updateTaskStatus } from '../../store/slices/tasksSlice';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import type { TaskFilters } from '../Common/SearchBar';
+import SearchBar from '../Common/SearchBar';
+
 
 // Droppable Column Component
 const DroppableColumn: React.FC<{
@@ -50,10 +53,13 @@ const TaskBoard: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentProject } = useAppSelector(state => state.projects);
   const { tasks } = useAppSelector(state => state.tasks);
+  const { sprints } = useAppSelector(state => state.sprints);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<TaskFilters>({});
 
   // Configure drag sensors
   const sensors = useSensors(
@@ -65,7 +71,52 @@ const TaskBoard: React.FC = () => {
   );
 
   // Filter tasks for current project
-  const projectTasks = tasks.filter(task => task.projectId === currentProject?.id);
+  const allProjectTasks = tasks.filter(task => {
+    if (task.projectId !== currentProject?.id) return false;
+    
+    // For Scrum projects, only show tasks from active sprints or tasks without sprint assignment
+    if (currentProject?.type === 'scrum') {
+      // If task has no sprint, don't show it on board (it should be in backlog)
+      if (!task.sprintId) return false;
+      
+      // Only show tasks from active sprints
+      const taskSprint = sprints.find(sprint => sprint.id === task.sprintId);
+      return taskSprint?.status === 'active';
+    }
+    
+    // For non-Scrum projects, show all tasks
+    return true;
+  });
+
+  // Apply search and filters
+  const projectTasks = useMemo(() => {
+    let filteredTasks = allProjectTasks;
+
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        task.title.toLowerCase().includes(query) ||
+        task.description.toLowerCase().includes(query) ||
+        task.assignee?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply filters
+    if (filters.priority) {
+      filteredTasks = filteredTasks.filter(task => task.priority === filters.priority);
+    }
+    if (filters.status) {
+      filteredTasks = filteredTasks.filter(task => task.status === filters.status);
+    }
+    if (filters.assignee) {
+      filteredTasks = filteredTasks.filter(task => 
+        task.assignee?.toLowerCase().includes(filters.assignee!.toLowerCase())
+      );
+    }
+
+    return filteredTasks;
+  }, [allProjectTasks, searchQuery, filters]);
 
   // Group tasks by status
   const tasksByStatus: Record<TaskStatus, Task[]> = {
@@ -97,6 +148,7 @@ const TaskBoard: React.FC = () => {
         return "#6c757d";
     }
   };
+
   // Handle task status change
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
     dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
@@ -148,6 +200,26 @@ const TaskBoard: React.FC = () => {
     );
   }
 
+  // For Scrum projects, check if there's an active sprint
+  if (currentProject.type === 'scrum') {
+    const activeSprint = sprints.find(sprint => 
+      sprint.projectId === currentProject.id && sprint.status === 'active'
+    );
+    
+    if (!activeSprint) {
+      return (
+        <div className="task-board-empty">
+          <h2>No Active Sprint</h2>
+          <p>Start a sprint from the Backlog to see tasks on the board.</p>
+          <div className="current-project-info">
+            <h3>Current Project: {currentProject.name}</h3>
+            <p>Go to Backlog → Create Sprint → Start Sprint to begin working on tasks.</p>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -158,6 +230,11 @@ const TaskBoard: React.FC = () => {
         <div className="task-board-header">
           <h1>{currentProject.name} - Task Board</h1>
           <p>Manage your tasks across different stages</p>
+          <SearchBar
+            onSearch={setSearchQuery}
+            onFilterChange={setFilters}
+            placeholder="Search tasks..."
+          />
         </div>
 
         <div className="board-columns">
@@ -214,7 +291,7 @@ const TaskBoard: React.FC = () => {
               setSelectedTask(null);
               setShowCreateModal(false);
             }}
-            defaultStatus={showCreateModal ? 'todo' : undefined}
+            defaultStatus={showCreateModal ? 'todo': undefined}
           />
         )}
       </div>
