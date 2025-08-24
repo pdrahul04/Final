@@ -227,11 +227,7 @@ MIT License - see LICENSE file for details.
 
 ## 🔗 Links
 
-- [Documentation](https://project-management-ui.dev)
-- [GitHub Repository](https://github.com/your-org/project-management-ui)
-- [NPM Package](https://www.npmjs.com/package/project-management-ui)
-- [Storybook](https://storybook.project-management-ui.dev)
-
+- [Documentation](https://github.com/pdrahul04/Final/tree/main)
 ---
 
 Built with ❤️ for modern React applications
