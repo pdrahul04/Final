@@ -1,21 +1,12 @@
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import type { Task, TaskPriority, TaskStatus } from "../../types";
-import { Plus, User } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { useState } from "react";
-import { deleteTask, updateTaskStatus } from "../../store/slices/tasksSlice";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import DraggableTask from "./DraggableTask";
-import TaskModal from "./TaskModal";
+import TaskModal from './TaskModal';
+import DraggableTask from './DraggableTask';
+import type { Task, TaskPriority, TaskStatus } from '../../types';
+import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
+import { Plus, User } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { useState } from 'react';
+import { deleteTask, updateTaskStatus } from '../../store/slices/tasksSlice';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 // Droppable Column Component
 const DroppableColumn: React.FC<{
@@ -31,20 +22,24 @@ const DroppableColumn: React.FC<{
   });
 
   return (
-    <div
+    <div 
       ref={setNodeRef}
-      className={`board-column ${isOver ? "drag-over" : ""}`}
+      className={`board-column ${isOver ? 'drag-over' : ''}`}
     >
       <div className="column-header" style={{ borderTopColor: color }}>
         <h3>{title}</h3>
         <div className="column-actions">
           <span className="task-count">{taskCount}</span>
-          <button className="add-task-btn" onClick={onAddTask} title="Add task">
+          <button 
+            className="add-task-btn"
+            onClick={onAddTask}
+            title="Add task"
+          >
             <Plus size={16} />
           </button>
         </div>
       </div>
-      <div className={`column-content ${isOver ? "drag-over" : ""}`}>
+      <div className={`column-content ${isOver ? 'drag-over' : ''}`}>
         {children}
       </div>
     </div>
@@ -53,8 +48,8 @@ const DroppableColumn: React.FC<{
 
 const TaskBoard: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { currentProject } = useAppSelector((state) => state.projects);
-  const { tasks } = useAppSelector((state) => state.tasks);
+  const { currentProject } = useAppSelector(state => state.projects);
+  const { tasks } = useAppSelector(state => state.tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
@@ -70,9 +65,7 @@ const TaskBoard: React.FC = () => {
   );
 
   // Filter tasks for current project
-  const projectTasks = tasks.filter(
-    (task) => task.projectId === currentProject?.id
-  );
+  const projectTasks = tasks.filter(task => task.projectId === currentProject?.id);
 
   // Group tasks by status
   const tasksByStatus: Record<TaskStatus, Task[]> = {
@@ -90,8 +83,9 @@ const TaskBoard: React.FC = () => {
     { status: "done", title: "Done", color: "#28a745" },
   ];
 
+
   // Get priority color
-  const getPriorityColor = (priority: TaskPriority) => {
+   const getPriorityColor = (priority: TaskPriority) => {
     switch (priority) {
       case "low":
         return "#28a745";
@@ -103,7 +97,6 @@ const TaskBoard: React.FC = () => {
         return "#6c757d";
     }
   };
-
   // Handle task status change
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
     dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
@@ -124,7 +117,7 @@ const TaskBoard: React.FC = () => {
   // Handle drag start
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const task = projectTasks.find((t) => t.id === active.id);
+    const task = projectTasks.find(t => t.id === active.id);
     setActiveTask(task || null);
     setShowTaskMenu(null); // Close any open menus
   };
@@ -140,7 +133,7 @@ const TaskBoard: React.FC = () => {
     const newStatus = over.id as TaskStatus;
 
     // Only update if status actually changed
-    const task = projectTasks.find((t) => t.id === taskId);
+    const task = projectTasks.find(t => t.id === taskId);
     if (task && task.status !== newStatus) {
       dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
     }
@@ -168,28 +161,26 @@ const TaskBoard: React.FC = () => {
         </div>
 
         <div className="board-columns">
-          {columns.map((column) => (
+          {columns.map(column => (
             <DroppableColumn
               key={column.status}
               status={column.status}
               title={column.title}
               color={column.color}
               taskCount={tasksByStatus[column.status].length}
-              onAddTask={() => handleCreateTask(column.status as TaskStatus)}
+              onAddTask={() => handleCreateTask(column.status)}
             >
               <SortableContext
-                items={tasksByStatus[column.status].map((task) => task.id)}
+                items={tasksByStatus[column.status].map(task => task.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {tasksByStatus[column.status].map((task) => (
+                {tasksByStatus[column.status].map(task => (
                   <DraggableTask
                     key={task.id}
                     task={task}
                     getPriorityColor={getPriorityColor}
                     showTaskMenu={showTaskMenu}
-                    onMenuToggle={(taskId) =>
-                      setShowTaskMenu(showTaskMenu === taskId ? null : taskId)
-                    }
+                    onMenuToggle={(taskId) => setShowTaskMenu(showTaskMenu === taskId ? null : taskId)}
                     onEdit={setSelectedTask}
                     onStatusChange={handleStatusChange}
                     onDelete={handleDeleteTask}
@@ -200,11 +191,9 @@ const TaskBoard: React.FC = () => {
                 {tasksByStatus[column.status].length === 0 && (
                   <div className="empty-column">
                     <p>No tasks in {column.title.toLowerCase()}</p>
-                    <button
+                    <button 
                       className="btn btn-secondary btn-sm"
-                      onClick={() =>
-                        handleCreateTask(column.status as TaskStatus)
-                      }
+                      onClick={() => handleCreateTask(column.status)}
                     >
                       <Plus size={14} />
                       Add first task
@@ -225,7 +214,7 @@ const TaskBoard: React.FC = () => {
               setSelectedTask(null);
               setShowCreateModal(false);
             }}
-            defaultStatus={showCreateModal ? "todo" : undefined}
+            defaultStatus={showCreateModal ? 'todo' : undefined}
           />
         )}
       </div>
@@ -235,13 +224,9 @@ const TaskBoard: React.FC = () => {
         {activeTask ? (
           <div className="task-card dragging">
             <div className="task-header">
-              <div
+              <div 
                 className="task-priority"
-                style={{
-                  backgroundColor: getPriorityColor(
-                    activeTask.priority as TaskPriority
-                  ),
-                }}
+                style={{ backgroundColor: getPriorityColor(activeTask.priority) }}
               />
             </div>
             <div className="task-content">

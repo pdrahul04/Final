@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "./hooks/redux";
-import { toggleSidebar } from "./store/slices/uiSlice";
-import { selectProject } from "./store/slices/projectsSlice";
-import ProjectCreationForm from "./components/ProjectCreation/ProjectCreationForm";
-import Dashboard from "./components/Dashboard/Dashboard";
-import Sidebar from "./components/Navigation/Sidebar";
-
+import { useState } from 'react';
+import { useAppSelector, useAppDispatch } from './hooks/redux';
+import { selectProject } from './store/slices/projectsSlice';
+import { toggleSidebar } from './store/slices/uiSlice';
+import Sidebar from './components/Navigation/Sidebar';
+import Dashboard from './components/Dashboard/Dashboard';
+import ProjectCreationForm from './components/ProjectCreation/ProjectCreationForm';
+import TaskBoard from './components/TaskBoard/TaskBoard';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -54,16 +54,7 @@ function App() {
         );
       case 'board':
         return (
-          <div className="view-placeholder">
-            <h2>Task Board</h2>
-            <p>Task board view will be implemented in Step 4</p>
-            {currentProject && (
-              <div className="current-project-info">
-                <h3>Current Project: {currentProject.name}</h3>
-                <p>Type: {currentProject.type}</p>
-              </div>
-            )}
-          </div>
+          <TaskBoard />
         );
       case 'backlog':
         return (
