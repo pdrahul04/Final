@@ -1,100 +1,175 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from './hooks/redux';
 import { selectProject } from './store/slices/projectsSlice';
-import Sidebar from './components/Navigation/Sidebar';
-import Dashboard from './components/Dashboard/Dashboard';
-import ProjectCreationForm from './components/ProjectCreation/ProjectCreationForm';
-import TaskBoard from './components/TaskBoard/TaskBoard';
-import Backlog from './components/Backlog/Backlog';
-import SprintManagement from './components/Sprints/SprintManagement';
-import { useState } from 'react';
+import { Suspense, lazy, useMemo, useCallback, useState } from 'react';
+import ErrorBoundary from './components/Common/ErrorBoundary';
+import LoadingSpinner from './components/Common/LoadingSpinner';
 import { Settings } from './components/Settings/Setting';
+
+// Lazy load components for code splitting
+const Sidebar = lazy(() => import('./components/Navigation/Sidebar'));
+const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
+const ProjectCreationForm = lazy(() => import('./components/ProjectCreation/ProjectCreationForm'));
+const TaskBoard = lazy(() => import('./components/TaskBoard/TaskBoard'));
+const Backlog = lazy(() => import('./components/Backlog/Backlog'));
+const SprintManagement = lazy(() => import('./components/Sprints/SprintManagement'));
+
+// Custom hook for sidebar state management
+function useSidebarState() {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    // Persist sidebar state in localStorage
+    const saved = localStorage.getItem('sidebar-open');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen((prev: boolean) => {
+      const newState = !prev;
+      localStorage.setItem('sidebar-open', JSON.stringify(newState));
+      return newState;
+    });
+  }, []);
+
+  return { sidebarOpen, handleToggleSidebar };
+}
+
+// Custom hook for project creation state
+function useProjectCreationState() {
+  const [showProjectCreation, setShowProjectCreation] = useState(false);
+
+  const handleCreateProject = useCallback(() => {
+    setShowProjectCreation(true);
+  }, []);
+
+  const handleProjectCreationSuccess = useCallback(() => {
+    setShowProjectCreation(false);
+  }, []);
+
+  const handleProjectCreationCancel = useCallback(() => {
+    setShowProjectCreation(false);
+  }, []);
+
+  return {
+    showProjectCreation,
+    handleCreateProject,
+    handleProjectCreationSuccess,
+    handleProjectCreationCancel
+  };
+}
+
+// Route guard component
+function ProtectedRoute({ 
+  children, 
+  condition, 
+  fallback = "/dashboard" 
+}: { 
+  children: React.ReactNode;
+  condition: boolean;
+  fallback?: string;
+}) {
+  return condition ? <>{children}</> : <Navigate to={fallback} replace />;
+}
 
 function App() {
   const dispatch = useAppDispatch();
   const { currentProject } = useAppSelector(state => state.projects);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showProjectCreation, setShowProjectCreation] = useState(false);
+  
+  const { sidebarOpen, handleToggleSidebar } = useSidebarState();
+  const {
+    showProjectCreation,
+    handleCreateProject,
+    handleProjectCreationSuccess,
+    handleProjectCreationCancel
+  } = useProjectCreationState();
 
-  const handleToggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const handleCreateProject = () => {
-    setShowProjectCreation(true);
-  };
-
-  const handleProjectCreationSuccess = () => {
-    setShowProjectCreation(false);
-  };
-
-  const handleProjectCreationCancel = () => {
-    setShowProjectCreation(false);
-  };
-
-  const handleSelectProject = (projectId: string) => {
+  const handleSelectProject = useCallback((projectId: string) => {
     dispatch(selectProject(projectId));
-  };
+  }, [dispatch]);
+
+  // Memoize main content classes
+  const mainContentClasses = useMemo(
+    () => `main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`,
+    [sidebarOpen]
+  );
+
+  // Memoize dashboard props to prevent unnecessary re-renders
+  const dashboardProps = useMemo(() => ({
+    onCreateProject: handleCreateProject,
+    onSelectProject: handleSelectProject
+  }), [handleCreateProject, handleSelectProject]);
+
+  // Memoize project creation form props
+  const projectCreationProps = useMemo(() => ({
+    onSuccess: handleProjectCreationSuccess,
+    onCancel: handleProjectCreationCancel
+  }), [handleProjectCreationSuccess, handleProjectCreationCancel]);
+
+  // Check if current project is scrum type
+  const isScrumProject = useMemo(() => 
+    currentProject?.type === 'scrum', 
+    [currentProject?.type]
+  );
 
   if (showProjectCreation) {
     return (
       <div className="app-layout">
-        <Sidebar isOpen={sidebarOpen} onToggle={handleToggleSidebar} />
-        <main className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-          <ProjectCreationForm
-            onSuccess={handleProjectCreationSuccess}
-            onCancel={handleProjectCreationCancel}
-          />
-        </main>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Sidebar isOpen={sidebarOpen} onToggle={handleToggleSidebar} />
+            <main className={mainContentClasses}>
+              <ProjectCreationForm {...projectCreationProps} />
+            </main>
+          </Suspense>
+        </ErrorBoundary>
       </div>
     );
   }
 
   return (
     <div className="app-layout">
-      <Sidebar isOpen={sidebarOpen} onToggle={handleToggleSidebar} />
-      <main className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <Dashboard
-                onCreateProject={handleCreateProject}
-                onSelectProject={handleSelectProject}
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Sidebar isOpen={sidebarOpen} onToggle={handleToggleSidebar} />
+          <main className={mainContentClasses}>
+            <Routes>
+              <Route 
+                path="/" 
+                element={<Dashboard {...dashboardProps} />} 
               />
-            } 
-          />
-          <Route 
-            path="/dashboard" 
-            element={
-              <Dashboard
-                onCreateProject={handleCreateProject}
-                onSelectProject={handleSelectProject}
+              <Route 
+                path="/dashboard" 
+                element={<Dashboard {...dashboardProps} />} 
               />
-            } 
-          />
-          <Route 
-            path="/board" 
-            element={
-              currentProject ? <TaskBoard /> : <Navigate to="/dashboard" replace />
-            } 
-          />
-          <Route 
-            path="/backlog" 
-            element={
-              currentProject?.type === 'scrum' ? <Backlog /> : <Navigate to="/dashboard" replace />
-            } 
-          />
-          <Route 
-            path="/sprints" 
-            element={
-              currentProject?.type === 'scrum' ? <SprintManagement /> : <Navigate to="/dashboard" replace />
-            } 
-          />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </main>
+              <Route 
+                path="/board" 
+                element={
+                  <ProtectedRoute condition={!!currentProject}>
+                    <TaskBoard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/backlog" 
+                element={
+                  <ProtectedRoute condition={isScrumProject}>
+                    <Backlog />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sprints" 
+                element={
+                  <ProtectedRoute condition={isScrumProject}>
+                    <SprintManagement />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
