@@ -8,6 +8,8 @@ export type TaskPriority = 'low' | 'medium'| 'high'
 
 export type SprintStatus = 'planned' | 'active' |'completed'
 
+export type ViewType = 'dashboard' | 'board' | 'backlog' | 'sprints';
+
 // Basic interfaces
 export interface Project {
   id: string;
@@ -95,6 +97,6 @@ export interface SprintsState {
 
 export interface UIState {
   sidebarOpen: boolean;
-  currentView: 'dashboard' | 'board' | 'backlog' | 'sprints';
+  currentView: ViewType;
   selectedTask: Task | null;
 }

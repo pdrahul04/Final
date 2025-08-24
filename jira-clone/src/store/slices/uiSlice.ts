@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Task } from "../../types";
+import type { Task, ViewType } from "../../types";
 
 interface UIState {
   sidebarOpen: boolean;
-  currentView: 'dashboard' | 'board' | 'backlog' | 'sprints';
+  currentView: ViewType;
   selectedTask: Task | null;
 }
 
@@ -28,7 +28,7 @@ const uiSlice = createSlice({
     },
 
     // Change current view
-    setCurrentView: (state, action: PayloadAction<'dashboard' | 'board' | 'backlog' | 'sprints'>) => {
+    setCurrentView: (state, action: PayloadAction<ViewType>) => {
       state.currentView = action.payload;
     },
 

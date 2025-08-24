@@ -1,0 +1,9 @@
+// Typed hooks for Redux
+// This is the recommended way to use Redux with TypeScript
+
+import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
+import type { RootState, AppDispatch } from '../store';
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
