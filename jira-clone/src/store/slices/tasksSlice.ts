@@ -26,6 +26,7 @@ const tasksSlice = createSlice({
       projectId: string;
       sprintId?: string;
       assignee?: string;
+      reporter?: string;
     }>) => {
       const newTask: Task = {
         id: generateId(),
@@ -36,6 +37,7 @@ const tasksSlice = createSlice({
         projectId: action.payload.projectId,
         sprintId: action.payload.sprintId,
         assignee: action.payload.assignee,
+        reporter: action.payload.reporter,
         createdAt: getCurrentTimestamp(),
         updatedAt: getCurrentTimestamp(),
         position: state.tasks.length, // Add to end

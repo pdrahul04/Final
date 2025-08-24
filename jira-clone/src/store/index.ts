@@ -3,6 +3,7 @@ import projectsReducer from './slices/projectsSlice';
 import tasksReducer from './slices/tasksSlice';
 import sprintsReducer from './slices/sprintsSlice';
 import uiReducer from './slices/uiSlice';
+import usersReducer from './slices/usersSlice'
 
 // Configure the Redux store
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
     projects: projectsReducer,
     tasks: tasksReducer,
     sprints: sprintsReducer,
+    users: usersReducer,
     ui: uiReducer,
   },
   // Enable Redux DevTools in development

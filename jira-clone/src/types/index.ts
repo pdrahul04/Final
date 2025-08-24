@@ -10,6 +10,16 @@ export type SprintStatus = 'planned' | 'active' |'completed'
 
 export type ViewType = 'dashboard' | 'board' | 'backlog' | 'sprints';
 
+// User interface
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: 'admin' | 'developer' | 'designer' | 'tester' | 'manager';
+  isActive: boolean;
+}
+
 // Basic interfaces
 export interface Project {
   id: string;
@@ -29,6 +39,7 @@ export interface Task {
   projectId: string;
   sprintId?: string; // Only for scrum projects
   assignee?: string;
+  reporter?: string;
   createdAt: string;
   updatedAt: string;
   position: number; // For drag & drop ordering
@@ -58,6 +69,7 @@ export interface CreateTaskFormData {
   description: string;
   priority: TaskPriority;
   assignee?: string;
+  reporter?: string;
 }
 
 export interface CreateSprintFormData {

@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { createTask, updateTask } from "../../store/slices/tasksSlice";
 import { X, Save, User, Flag, Calendar } from "lucide-react";
 import type { Task, TaskPriority, TaskStatus } from "../../types";
+import { selectActiveUsers } from "../../store/slices/usersSlice";
 
 interface TaskModalProps {
   task?: Task | null;
@@ -15,6 +16,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
   const dispatch = useAppDispatch();
   const { currentProject } = useAppSelector(state => state.projects);
   const { sprints } = useAppSelector(state => state.sprints);
+  const activeUsers = useAppSelector(selectActiveUsers);
   
   const [formData, setFormData] = useState<{
     title: string;
@@ -22,12 +24,14 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
     priority: TaskPriority;
     status: TaskStatus;
     assignee: string;
+    reporter: string;
   }>({
     title: "",
     description: "",
     priority: "medium",
     status: "todo",
-    assignee: "",
+    assignee: '',
+    reporter: ''
   });
 
 
@@ -42,7 +46,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
         description: task.description,
         priority: task.priority,
         status: task.status,
-        assignee: task.assignee || ''
+        assignee: task.assignee || '',
+        reporter: task.reporter || ''
       });
     } else {
       setFormData({
@@ -50,7 +55,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
         description: '',
         priority: 'medium',
         status: 'todo',
-        assignee: ''
+        assignee: '',
+        reporter: ''
       });
     }
     setErrors({});
@@ -90,7 +96,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
             description: formData.description.trim(),
             priority: formData.priority,
             status: formData.status,
-            assignee: formData.assignee.trim() || undefined
+            assignee: formData.assignee.trim() || undefined,
+            reporter: formData.reporter.trim() || undefined
           }
         }));
       } else {
@@ -110,7 +117,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
           priority: formData.priority,
           projectId: currentProject.id,
           sprintId: sprintId,
-          assignee: formData.assignee.trim() || undefined
+          assignee: formData.assignee.trim() || undefined,
+          reporter: formData.reporter.trim() || undefined
         }));
       }
       
@@ -236,20 +244,48 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
           </div>
 
           {/* Assignee */}
+          {/* Assignee */}
           <div className="form-group">
             <label htmlFor="taskAssignee" className="form-label">
               <User size={16} />
               Assignee
             </label>
-            <input
+            <select
               id="taskAssignee"
-              type="text"
-              className="form-input"
+              className="form-select"
               value={formData.assignee}
               onChange={(e) => handleInputChange('assignee', e.target.value)}
-              placeholder="Enter assignee name (optional)"
               disabled={isSubmitting}
-            />
+            >
+              <option value="">Unassigned</option>
+              {activeUsers.map(user => (
+                <option key={user.id} value={user.name}>
+                  {user.name} ({user.role})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reporter */}
+          <div className="form-group">
+            <label htmlFor="taskReporter" className="form-label">
+              <User size={16} />
+              Reporter
+            </label>
+            <select
+              id="taskReporter"
+              className="form-select"
+              value={formData.reporter}
+              onChange={(e) => handleInputChange('reporter', e.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="">No reporter</option>
+              {activeUsers.map(user => (
+                <option key={user.id} value={user.name}>
+                  {user.name} ({user.role})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Form Actions */}
