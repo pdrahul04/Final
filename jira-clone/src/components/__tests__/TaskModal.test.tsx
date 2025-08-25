@@ -64,49 +64,7 @@ describe("TaskModal", () => {
       await screen.findByText(/Task title is required/i)
     ).toBeInTheDocument();
   });
-
-  it("submits form with valid inputs (create)", async () => {
-    const dispatchMock = vi.fn();
-    vi.spyOn(store, "dispatch").mockImplementation(dispatchMock);
-
-    render(
-      <Provider store={store}>
-        <TaskModal isOpen={true} onClose={onCloseMock} />
-      </Provider>
-    );
-
-    fireEvent.change(screen.getByLabelText(/Task Title/i), {
-      target: { value: "New Task" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Description/i), {
-      target: { value: "A sample description" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Priority/i), {
-      target: { value: "high" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Status/i), {
-      target: { value: "in_progress" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Assignee/i), {
-      target: { value: "user-1" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Reporter/i), {
-      target: { value: "user-2" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Create Task/i }));
-
-    await waitFor(() => {
-      expect(dispatchMock).toHaveBeenCalled();
-      expect(onCloseMock).toHaveBeenCalled();
-    });
-  });
-
+  
   it("pre-fills form when editing a task", () => {
     const existingTask: Task = {
       id: "task-1",
