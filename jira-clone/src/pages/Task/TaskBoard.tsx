@@ -9,45 +9,7 @@ import type { TaskFilters } from '../../components/Common/SearchBar';
 import SearchBar from '../../components/Common/SearchBar';
 import DraggableTask from '../../components/TaskBoard/DraggableTask';
 import TaskModal from '../../components/TaskBoard/TaskModal';
-
-
-// Droppable Column Component
-const DroppableColumn: React.FC<{
-  status: TaskStatus;
-  title: string;
-  color: string;
-  taskCount: number;
-  onAddTask: () => void;
-  children: React.ReactNode;
-}> = ({ status, title, color, taskCount, onAddTask, children }) => {
-  const { isOver, setNodeRef } = useDroppable({
-    id: status,
-  });
-
-  return (
-    <div 
-      ref={setNodeRef}
-      className={`board-column ${isOver ? 'drag-over' : ''}`}
-    >
-      <div className="column-header" style={{ borderTopColor: color }}>
-        <h3>{title}</h3>
-        <div className="column-actions">
-          <span className="task-count">{taskCount}</span>
-          <button 
-            className="add-task-btn"
-            onClick={onAddTask}
-            title="Add task"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-      </div>
-      <div className={`column-content ${isOver ? 'drag-over' : ''}`}>
-        {children}
-      </div>
-    </div>
-  );
-};
+import { DroppableColumn } from '../../components/TaskBoard/DroppableColumn';
 
 const TaskBoard: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -132,6 +94,7 @@ const TaskBoard: React.FC = () => {
     { status: "in_progress", title: "In Progress", color: "#007bff" },
     { status: "in_review", title: "In Review", color: "#ffc107" },
     { status: "done", title: "Done", color: "#28a745" },
+    { status: "done", title: "test", color: "#28a745" },
   ];
 
 
