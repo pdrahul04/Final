@@ -5,6 +5,8 @@ import { Suspense, lazy, useMemo, useCallback, useState } from 'react';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import { Setting } from './pages/Setting/Setting';
+import { useSidebarState } from './hooks/sidebar';
+import { useProjectCreationState } from './hooks/CreationState';
 
 // Lazy load components for code splitting
 const Sidebar = lazy(() => import('./pages/Navigation/Sidebar'));
@@ -13,49 +15,6 @@ const ProjectCreationForm = lazy(() => import('./components/ProjectCreation/Proj
 const TaskBoard = lazy(() => import('./pages/Task/TaskBoard'));
 const Backlog = lazy(() => import('./components/Backlog/Backlog'));
 const SprintManagement = lazy(() => import('./pages/Sprint/SprintManagement'));
-
-// Custom hook for sidebar state management
-function useSidebarState() {
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Persist sidebar state in localStorage
-    const saved = localStorage.getItem('sidebar-open');
-    return saved ? JSON.parse(saved) : true;
-  });
-
-  const handleToggleSidebar = useCallback(() => {
-    setSidebarOpen((prev: boolean) => {
-      const newState = !prev;
-      localStorage.setItem('sidebar-open', JSON.stringify(newState));
-      return newState;
-    });
-  }, []);
-
-  return { sidebarOpen, handleToggleSidebar };
-}
-
-// Custom hook for project creation state
-function useProjectCreationState() {
-  const [showProjectCreation, setShowProjectCreation] = useState(false);
-
-  const handleCreateProject = useCallback(() => {
-    setShowProjectCreation(true);
-  }, []);
-
-  const handleProjectCreationSuccess = useCallback(() => {
-    setShowProjectCreation(false);
-  }, []);
-
-  const handleProjectCreationCancel = useCallback(() => {
-    setShowProjectCreation(false);
-  }, []);
-
-  return {
-    showProjectCreation,
-    handleCreateProject,
-    handleProjectCreationSuccess,
-    handleProjectCreationCancel
-  };
-}
 
 // Route guard component
 function ProtectedRoute({ 
