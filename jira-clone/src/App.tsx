@@ -6,7 +6,7 @@ import ErrorBoundary from "./components/Common/ErrorBoundary";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
 import { Setting } from "./pages/Setting/Setting";
 import { useSidebarState } from "./hooks/sidebar";
-import { useProjectCreationState } from "./hooks/CreationState";
+import { useProjectCreationState } from "./hooks/creationState";
 
 // Lazy load components
 const Sidebar = lazy(() => import("./pages/Navigation/Sidebar"));
