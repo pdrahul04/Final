@@ -1,5 +1,3 @@
-import TaskModal from './TaskModal';
-import DraggableTask from './DraggableTask';
 import type { Task, TaskPriority, TaskStatus } from '../../types';
 import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { Plus, User } from 'lucide-react';
@@ -7,8 +5,10 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { useMemo, useState } from 'react';
 import { deleteTask, updateTaskStatus } from '../../store/slices/tasksSlice';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import type { TaskFilters } from '../Common/SearchBar';
-import SearchBar from '../Common/SearchBar';
+import type { TaskFilters } from '../../components/Common/SearchBar';
+import SearchBar from '../../components/Common/SearchBar';
+import DraggableTask from '../../components/TaskBoard/DraggableTask';
+import TaskModal from '../../components/TaskBoard/TaskModal';
 
 
 // Droppable Column Component

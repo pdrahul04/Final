@@ -4,15 +4,15 @@ import { selectProject } from './store/slices/projectsSlice';
 import { Suspense, lazy, useMemo, useCallback, useState } from 'react';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import LoadingSpinner from './components/Common/LoadingSpinner';
-import { Settings } from './components/Settings/Setting';
+import { Setting } from './pages/Setting/Setting';
 
 // Lazy load components for code splitting
-const Sidebar = lazy(() => import('./components/Navigation/Sidebar'));
-const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
+const Sidebar = lazy(() => import('./pages/Navigation/Sidebar'));
+const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const ProjectCreationForm = lazy(() => import('./components/ProjectCreation/ProjectCreationForm'));
-const TaskBoard = lazy(() => import('./components/TaskBoard/TaskBoard'));
+const TaskBoard = lazy(() => import('./pages/Task/TaskBoard'));
 const Backlog = lazy(() => import('./components/Backlog/Backlog'));
-const SprintManagement = lazy(() => import('./components/Sprints/SprintManagement'));
+const SprintManagement = lazy(() => import('./pages/Sprint/SprintManagement'));
 
 // Custom hook for sidebar state management
 function useSidebarState() {
@@ -164,7 +164,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings" element={<Setting />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
