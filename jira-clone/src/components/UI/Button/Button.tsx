@@ -33,12 +33,12 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {loading ? (
-        <Loader2 size={16} className="animate-spin" />
+        <Loader2 size={16} className="animate-spin" data-testid="loader-icon" />
       ) : (
-        Icon && iconPosition === 'left' && <Icon size={16} />
+        Icon && iconPosition === 'left' && <Icon size={16} data-testid="button-icon" />
       )}
       {children}
-      {!loading && Icon && iconPosition === 'right' && <Icon size={16} />}
+      {!loading && Icon && iconPosition === 'right' && <Icon size={16} data-testid="button-icon" />}
     </button>
   );
 };

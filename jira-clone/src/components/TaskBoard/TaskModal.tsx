@@ -52,7 +52,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize form data when task changes
+  // In your TaskModal component, update the useEffect:
   useEffect(() => {
     if (task) {
       setFormData({
@@ -68,13 +68,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
         title: "",
         description: "",
         priority: "medium",
-        status: "todo",
+        status: defaultStatus || "todo", // <- Add this line
         assignee: "",
         reporter: "",
       });
     }
     setErrors({});
-  }, [task, defaultStatus]);
+  }, [task, defaultStatus]); // <- Add defaultStatus to dependency array
 
   // Validate form
   const validateForm = () => {
