@@ -244,7 +244,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
           </div>
 
           {/* Assignee */}
-          {/* Assignee */}
           <div className="form-group">
             <label htmlFor="taskAssignee" className="form-label">
               <User size={16} />
@@ -253,13 +252,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
             <select
               id="taskAssignee"
               className="form-select"
-              value={formData.assignee}
+              value={formData.assignee || ''}
               onChange={(e) => handleInputChange('assignee', e.target.value)}
               disabled={isSubmitting}
             >
               <option value="">Unassigned</option>
               {activeUsers.map(user => (
-                <option key={user.id} value={user.name}>
+                <option key={user.id} value={user.id}>
                   {user.name} ({user.role})
                 </option>
               ))}
@@ -281,7 +280,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, defaultSta
             >
               <option value="">No reporter</option>
               {activeUsers.map(user => (
-                <option key={user.id} value={user.name}>
+                <option key={user.id} value={user.id}>
                   {user.name} ({user.role})
                 </option>
               ))}
