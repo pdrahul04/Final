@@ -93,8 +93,7 @@ const TaskBoard: React.FC = () => {
     { status: "todo", title: "To Do", color: "#6c757d" },
     { status: "in_progress", title: "In Progress", color: "#007bff" },
     { status: "in_review", title: "In Review", color: "#ffc107" },
-    { status: "done", title: "Done", color: "#28a745" },
-    { status: "done", title: "test", color: "#28a745" },
+    { status: "done", title: "Done", color: "#28a745" }
   ];
 
 
